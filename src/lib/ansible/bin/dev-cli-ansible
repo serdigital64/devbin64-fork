@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# template-cli: 1.2.0
 # template-task: 1.9.0
 #######################################
 # Copyright SerDigital64 - https://github.com/serdigital64
@@ -14,25 +15,20 @@
 #######################################
 
 source ./bin/dev-set &&
+  source ./bin/dev-source-ansible &&
   source ./bin/dev-source-base &&
-  function my_prepare() {
-    bl64_dbg_app_show_function
-    bl64_msg_show_task 'Normalize repository permissions'
-    bl64_fs_path_set_permissions '0755' '0755' "$BL64_VAR_DEFAULT" "$BL64_VAR_DEFAULT" "$BL64_VAR_ON" \
-      "$DEV_PATH_BIN" \
-      "$DEV_PATH_SRC" \
-      "$DEV_PATH_TEST"
-  }
+  source ./bin/dev-env-ansible || exit 1
 
 function my_initialize() {
   bl64_dbg_app_show_function
-  dev_base_task_initialize
+  dev_base_task_initialize &&
+    dev_ansible_setup
 }
 
 bl64_lib_script_version_set '1.0.0'
-bl64_msg_help_set_about 'Prepare local repository'
+bl64_msg_help_set_about 'Run dev time tool'
 dev_base_initialize && my_initialize || exit $?
 
 bl64_msg_show_batch_start "$BL64_SCRIPT_ID"
-my_prepare
+bl64_ans_run_ansible "$@"
 bl64_msg_show_batch_finish $? "$BL64_SCRIPT_ID"
